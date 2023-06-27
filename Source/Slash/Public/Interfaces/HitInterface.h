@@ -22,4 +22,6 @@ class SLASH_API IHitInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
+	/** Called when the actor is hit by a weapon. */
+	virtual void GetHit(const FVector& ImpactPoint) = 0;
 };
