@@ -11,7 +11,7 @@ class UAnimMontage;
 
 UCLASS()
 class SLASH_API AEnemy : public ACharacter, public IHitInterface
-{
+{ 
 	GENERATED_BODY()
 
 public:
@@ -22,6 +22,8 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	virtual void GetHit(const FVector& ImpactPoint) override;
+
+	void DirectionalHitReact(const FVector& ImpactPoint);
 
 protected:
 	
