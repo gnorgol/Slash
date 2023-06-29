@@ -188,7 +188,7 @@ void ASlashCharacter::PlayAttackMontage()
 		switch (Selection)
 		{
 		case 0:
-			SectionName = FName("Attack2");
+			SectionName = FName("Attack1");
 			break;
 		case 1:
 			SectionName = FName("Attack2");
