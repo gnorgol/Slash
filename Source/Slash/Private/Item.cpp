@@ -84,7 +84,7 @@ void AItem::Tick(float DeltaTime)
 	
 
 
-	////actor Rotate with deltaTime
+	//actor Rotate with deltaTime
 	//AddActorLocalRotation(FRotator(0.f, 0.f, 30.f * DeltaTime));
 
 
