@@ -8,6 +8,7 @@
 #include "Components/SphereComponent.h"
 #include "Components/BoxComponent.h"
 #include "Interfaces/HitInterface.h"
+#include "NiagaraComponent.h"
 
 AWeapon::AWeapon()
 {
@@ -40,6 +41,9 @@ void AWeapon::Equip(USceneComponent* InParent, FName InSocketName)
 	if (Sphere)
 	{
 		Sphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+	if (EmbersEffect) {
+		EmbersEffect->Deactivate();
 	}
 }
 
@@ -87,9 +91,11 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 		IHitInterface* HitInterface = Cast<IHitInterface>(BoxHit.GetActor());
 		if (HitInterface)
 		{
-			HitInterface->GetHit(BoxHit.ImpactPoint);
+			HitInterface->Execute_GetHit(BoxHit.GetActor(), BoxHit.ImpactPoint);
 		}
 		IgnoreActors.AddUnique(BoxHit.GetActor());
+
+		CreateFields(BoxHit.ImpactPoint);
 	}
 	
 }

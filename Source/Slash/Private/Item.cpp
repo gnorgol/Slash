@@ -6,6 +6,7 @@
 #include "Slash/DebugMacro.h"
 #include "Components/SphereComponent.h"
 #include "Character/SlashCharacter.h"
+#include "NiagaraComponent.h"
 
 
 #define THIRTY 30
@@ -27,6 +28,9 @@ AItem::AItem()
 
 	Sphere = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere"));
 	Sphere->SetupAttachment(GetRootComponent());
+
+	EmbersEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Embers"));
+	EmbersEffect->SetupAttachment(GetRootComponent());
 
 }
 
@@ -75,16 +79,16 @@ void AItem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	RunningTime += DeltaTime;
+	//RunningTime += DeltaTime;
 
-	if (ItemState == EItemState::EIS_Hovering)
-	{
-		AddActorWorldOffset(FVector(0.f, 0.f, TransformedSin()));
-	}
+	//if (ItemState == EItemState::EIS_Hovering)
+	//{
+	//	AddActorWorldOffset(FVector(0.f, 0.f, TransformedSin()));
+	//}
 	
 
 
-	////actor Rotate with deltaTime
+	//actor Rotate with deltaTime
 	//AddActorLocalRotation(FRotator(0.f, 0.f, 30.f * DeltaTime));
 
 
