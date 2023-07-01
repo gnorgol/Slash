@@ -21,6 +21,16 @@ void UAttributeComponent::BeginPlay()
 	
 }
 
+void UAttributeComponent::ReceiveDamage(float DamageAmount)
+{
+	Health = FMath::Clamp(Health - DamageAmount, 0.f, MaxHealth);
+}
+
+float UAttributeComponent::GetHealthPercent()
+{
+	return Health / MaxHealth;
+}
+
 
 void UAttributeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
