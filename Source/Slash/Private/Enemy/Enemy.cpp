@@ -7,6 +7,8 @@
 #include "Slash/DebugMacro.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
+#include "Components/AttributeComponent.h"
+#include "HUD/HealthBarComponent.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -19,6 +21,12 @@ AEnemy::AEnemy()
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetGenerateOverlapEvents(true);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+
+	Attributes = CreateDefaultSubobject<UAttributeComponent>(TEXT("Attributes"));
+
+	HealthBarWidget = CreateDefaultSubobject<UHealthBarComponent>(TEXT("HealthBar"));
+	HealthBarWidget->SetupAttachment(GetRootComponent());
+
 	
 
 
@@ -28,7 +36,74 @@ AEnemy::AEnemy()
 void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (HealthBarWidget)
+	{
+		HealthBarWidget->SetVisibility(false);
+	}
 	
+	
+}
+
+void AEnemy::Die()
+{
+
+
+	//Play Death Montage
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && DeathMontage)
+	{
+		AnimInstance->Montage_Play(DeathMontage);
+		const int32 Section = FMath::RandRange(0, 5);
+		FName SectionName;
+		switch (Section)
+		{
+			case 0:	
+				SectionName = FName("Death1");
+				DeathPose = EDeathPose::EDP_Death1;
+				break;
+			case 1:
+				SectionName = FName("Death2");
+				DeathPose = EDeathPose::EDP_Death2;
+				break;
+			case 2:
+				SectionName = FName("Death3");
+				DeathPose = EDeathPose::EDP_Death3;
+				break;
+			case 3: 
+				SectionName = FName("Death4");
+				DeathPose = EDeathPose::EDP_Death4;
+				break;
+			case 4:
+				SectionName = FName("Death5");
+				DeathPose = EDeathPose::EDP_Death5;
+				break;
+			case 5:
+				SectionName = FName("Death6");
+				DeathPose = EDeathPose::EDP_Death6;
+				break;
+			default:
+				SectionName = FName("Death1");
+				DeathPose = EDeathPose::EDP_Death1;
+				break;
+
+
+		}
+
+		AnimInstance->Montage_JumpToSection(SectionName, DeathMontage);
+	}
+
+	if (HealthBarWidget)
+	{
+		HealthBarWidget->SetVisibility(false);
+	}
+
+
+	//Disable Collision
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	//Set Life Span
+	SetLifeSpan(5.0f);
 }
 
 void AEnemy::PlayHitReactMontage(FName SectionName)
@@ -45,6 +120,20 @@ void AEnemy::PlayHitReactMontage(FName SectionName)
 void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	//Hide Health Bar if the player is far away
+	if (CombatTarget)
+	{
+		const double DistanceToTarget =	(CombatTarget->GetActorLocation() - GetActorLocation()).Size();
+		if (DistanceToTarget > CombatRadius)
+		{
+			CombatTarget = nullptr;
+			if (HealthBarWidget)
+			{
+				HealthBarWidget->SetVisibility(false);
+			}
+
+		}
+	}
 
 }
 
@@ -58,7 +147,20 @@ void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 void AEnemy::GetHit_Implementation(const FVector& ImpactPoint)
 {
 	//DRAW_SPHERE_COLOR(ImpactPoint, FColor::Orange);
-	DirectionalHitReact(ImpactPoint);
+	if (HealthBarWidget)
+	{
+		HealthBarWidget->SetVisibility(true);
+	}
+
+	if (Attributes->IsAlive())
+	{
+		DirectionalHitReact(ImpactPoint);
+	}
+	else
+	{
+		Die();
+	}
+	
 
 	if (HitSound)
 	{
@@ -122,5 +224,20 @@ void AEnemy::DirectionalHitReact(const FVector& ImpactPoint)
 	//}
 	//UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + Forward * 60.f, 10.f, FColor::Red, 15.f);
 	//UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + ToHit * 60.f, 10.f, FColor::Green, 15.f);
+}
+
+float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	if (Attributes)
+	{
+		Attributes->ReceiveDamage(DamageAmount);
+
+		if (HealthBarWidget)
+		{
+			HealthBarWidget->SetHealthPercentage(Attributes->GetHealthPercent());
+		}
+	}
+	CombatTarget = EventInstigator->GetPawn();
+	return DamageAmount;
 }
 
