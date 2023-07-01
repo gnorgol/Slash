@@ -36,11 +36,19 @@ AEnemy::AEnemy()
 void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (HealthBarWidget)
+	{
+		HealthBarWidget->SetVisibility(false);
+	}
+	
 	
 }
 
 void AEnemy::Die()
 {
+
+
 	//Play Death Montage
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	if (AnimInstance && DeathMontage)
@@ -85,6 +93,17 @@ void AEnemy::Die()
 		AnimInstance->Montage_JumpToSection(SectionName, DeathMontage);
 	}
 
+	if (HealthBarWidget)
+	{
+		HealthBarWidget->SetVisibility(false);
+	}
+
+
+	//Disable Collision
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	//Set Life Span
+	SetLifeSpan(5.0f);
 }
 
 void AEnemy::PlayHitReactMontage(FName SectionName)
@@ -101,6 +120,20 @@ void AEnemy::PlayHitReactMontage(FName SectionName)
 void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	//Hide Health Bar if the player is far away
+	if (CombatTarget)
+	{
+		const double DistanceToTarget =	(CombatTarget->GetActorLocation() - GetActorLocation()).Size();
+		if (DistanceToTarget > CombatRadius)
+		{
+			CombatTarget = nullptr;
+			if (HealthBarWidget)
+			{
+				HealthBarWidget->SetVisibility(false);
+			}
+
+		}
+	}
 
 }
 
@@ -114,7 +147,10 @@ void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 void AEnemy::GetHit_Implementation(const FVector& ImpactPoint)
 {
 	//DRAW_SPHERE_COLOR(ImpactPoint, FColor::Orange);
-
+	if (HealthBarWidget)
+	{
+		HealthBarWidget->SetVisibility(true);
+	}
 
 	if (Attributes->IsAlive())
 	{
@@ -201,6 +237,7 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 			HealthBarWidget->SetHealthPercentage(Attributes->GetHealthPercent());
 		}
 	}
+	CombatTarget = EventInstigator->GetPawn();
 	return DamageAmount;
 }
 
