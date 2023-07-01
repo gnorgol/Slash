@@ -13,5 +13,10 @@ UCLASS()
 class SLASH_API UHealthBarComponent : public UWidgetComponent
 {
 	GENERATED_BODY()
+public:
+	void SetHealthPercentage(float HealthPercentage);
 	
+private:
+	UPROPERTY()
+	class UHealthBar* HealthBarWidget;
 };
