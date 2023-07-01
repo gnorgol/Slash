@@ -39,6 +39,54 @@ void AEnemy::BeginPlay()
 	
 }
 
+void AEnemy::Die()
+{
+	//Play Death Montage
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && DeathMontage)
+	{
+		AnimInstance->Montage_Play(DeathMontage);
+		const int32 Section = FMath::RandRange(0, 5);
+		FName SectionName;
+		switch (Section)
+		{
+			case 0:	
+				SectionName = FName("Death1");
+				DeathPose = EDeathPose::EDP_Death1;
+				break;
+			case 1:
+				SectionName = FName("Death2");
+				DeathPose = EDeathPose::EDP_Death2;
+				break;
+			case 2:
+				SectionName = FName("Death3");
+				DeathPose = EDeathPose::EDP_Death3;
+				break;
+			case 3: 
+				SectionName = FName("Death4");
+				DeathPose = EDeathPose::EDP_Death4;
+				break;
+			case 4:
+				SectionName = FName("Death5");
+				DeathPose = EDeathPose::EDP_Death5;
+				break;
+			case 5:
+				SectionName = FName("Death6");
+				DeathPose = EDeathPose::EDP_Death6;
+				break;
+			default:
+				SectionName = FName("Death1");
+				DeathPose = EDeathPose::EDP_Death1;
+				break;
+
+
+		}
+
+		AnimInstance->Montage_JumpToSection(SectionName, DeathMontage);
+	}
+
+}
+
 void AEnemy::PlayHitReactMontage(FName SectionName)
 {
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
@@ -66,7 +114,17 @@ void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 void AEnemy::GetHit_Implementation(const FVector& ImpactPoint)
 {
 	//DRAW_SPHERE_COLOR(ImpactPoint, FColor::Orange);
-	DirectionalHitReact(ImpactPoint);
+
+
+	if (Attributes->IsAlive())
+	{
+		DirectionalHitReact(ImpactPoint);
+	}
+	else
+	{
+		Die();
+	}
+	
 
 	if (HitSound)
 	{

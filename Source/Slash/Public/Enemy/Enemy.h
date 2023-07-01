@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Interfaces/HitInterface.h"
+#include "Character/CharacterTypes.h"
 #include "Enemy.generated.h"
 
 class UAnimMontage;
@@ -33,10 +34,15 @@ protected:
 	
 	virtual void BeginPlay() override;
 
+	void Die();
+
 	/*
 	Play Montage function
 	*/
 	void PlayHitReactMontage(const FName SectionName);
+
+	UPROPERTY(BlueprintReadOnly)
+	EDeathPose DeathPose = EDeathPose::EDP_Alive;
 
 public:	
 
@@ -48,11 +54,16 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	UHealthBarComponent* HealthBarWidget;
 
+
+	
+
 	/*
 	Animation Montage
 	*/
 	UPROPERTY(EditDefaultsOnly, Category = Montages)
 		UAnimMontage* HitReactMontage;
+	UPROPERTY(EditDefaultsOnly, Category = Montages)
+		UAnimMontage* DeathMontage;
 	
 
 	UPROPERTY(EditAnywhere, Category = Sounds)
@@ -60,4 +71,6 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = VisualEffects)
 	UParticleSystem* HitParticles;
+
+
 };
