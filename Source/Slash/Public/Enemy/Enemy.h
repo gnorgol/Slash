@@ -35,6 +35,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	void Die();
+	bool InTargetRange(AActor* Target, double Radius);
 
 	/*
 	Play Montage function
@@ -59,7 +60,21 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	double CombatRadius = 500.0f;
-	
+
+	UPROPERTY(EditAnywhere)
+	double PatrolRadius = 200.f;
+	/*
+	Navigations
+	*/
+	UPROPERTY()
+	class AAIController* EnemyController;
+
+	// Current Patrol Target
+	UPROPERTY(EditInstanceOnly, Category = "AI Nagigation")
+	AActor * PatrolTarget;
+
+	UPROPERTY(EditInstanceOnly, Category = "AI Nagigation")
+		TArray<AActor*> PatrolPoints;
 
 	/*
 	Animation Montage

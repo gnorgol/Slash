@@ -10,6 +10,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Components/AttributeComponent.h"
 #include "HUD/HealthBarComponent.h"
+#include "AIController.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -44,7 +45,21 @@ void AEnemy::BeginPlay()
 		HealthBarWidget->SetVisibility(false);
 	}
 	
-	
+	EnemyController = Cast<AAIController>(GetController());
+	if (EnemyController && PatrolTarget)
+	{
+		FAIMoveRequest MoveRequest;
+		MoveRequest.SetGoalActor(PatrolTarget);
+		MoveRequest.SetAcceptanceRadius(15.0f);
+		FNavPathSharedPtr NavPath;
+		EnemyController->MoveTo(MoveRequest, &NavPath);
+		TArray<FNavPathPoint>& PathPoints = NavPath->GetPathPoints();
+		for (FNavPathPoint& Point : PathPoints)
+		{
+			const FVector Location = Point.Location;
+			DrawDebugSphere(GetWorld(), Location, 12.0f, 12, FColor::Green, false, 10.0f);
+		}
+	}
 }
 
 void AEnemy::Die()
@@ -108,6 +123,12 @@ void AEnemy::Die()
 	SetLifeSpan(5.0f);
 }
 
+bool AEnemy::InTargetRange(AActor* Target, double Radius)
+{
+	const double DistanceToTarget = (Target->GetActorLocation() - GetActorLocation()).Size();
+	return DistanceToTarget <= Radius;
+}
+
 void AEnemy::PlayHitReactMontage(FName SectionName)
 {
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
@@ -126,14 +147,45 @@ void AEnemy::Tick(float DeltaTime)
 	if (CombatTarget)
 	{
 		const double DistanceToTarget =	(CombatTarget->GetActorLocation() - GetActorLocation()).Size();
-		if (DistanceToTarget > CombatRadius)
+		if (!InTargetRange(CombatTarget, CombatRadius))
 		{
 			CombatTarget = nullptr;
 			if (HealthBarWidget)
 			{
 				HealthBarWidget->SetVisibility(false);
 			}
-
+		}
+	}
+	if (PatrolTarget && EnemyController) {
+		if (InTargetRange(PatrolTarget, PatrolRadius))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Patrol Target Reached"));
+			if(PatrolPoints.Num() > 0)
+			{
+				TArray<AActor*> ValidPatrolPoints;
+				for (AActor* Target : PatrolPoints)
+				{
+					if (Target != PatrolTarget)
+					{
+						ValidPatrolPoints.Add(Target);
+					}
+					
+				}
+				//random patrol index
+				const int32 RandomIndex = FMath::RandRange(0, ValidPatrolPoints.Num() - 1);
+				PatrolTarget = ValidPatrolPoints[RandomIndex];
+				FAIMoveRequest MoveRequest;
+				MoveRequest.SetGoalActor(PatrolTarget);
+				MoveRequest.SetAcceptanceRadius(15.0f);
+				FNavPathSharedPtr NavPath;
+				EnemyController->MoveTo(MoveRequest, &NavPath);
+				TArray<FNavPathPoint>& PathPoints = NavPath->GetPathPoints();
+				for (FNavPathPoint& Point : PathPoints)
+				{
+					const FVector Location = Point.Location;
+					DrawDebugSphere(GetWorld(), Location, 12.0f, 12, FColor::Green, false, 10.0f);
+				}
+			}
 		}
 	}
 
