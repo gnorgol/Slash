@@ -22,6 +22,10 @@ public:
 	AEnemy();
 	virtual void Tick(float DeltaTime) override;
 
+	void CheckPatrolTarget();
+
+	void CheckCombatTarget();
+
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	virtual void GetHit_Implementation(const FVector& ImpactPoint) override;
@@ -36,6 +40,8 @@ protected:
 
 	void Die();
 	bool InTargetRange(AActor* Target, double Radius);
+	void MoveToTarget(AActor* Target);
+	AActor* ChoosePatrolTarget();
 
 	/*
 	Play Montage function
@@ -63,6 +69,15 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	double PatrolRadius = 200.f;
+
+	FTimerHandle PatrolTimer;
+
+	void PatrolTimerFinished();
+
+	UPROPERTY(EditInstanceOnly, Category = "AI Nagigation")
+	float WaitMin = 5.f;
+	UPROPERTY(EditInstanceOnly, Category = "AI Nagigation")
+	float WaitMax = 10.f;
 	/*
 	Navigations
 	*/
