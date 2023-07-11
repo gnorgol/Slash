@@ -155,7 +155,17 @@ AActor* AEnemy::ChoosePatrolTarget()
 
 void AEnemy::PawnSeen(APawn* Pawn)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Pawn Seen"));
+	
+	if (EnemyState == EEnemyState::EES_Chasing) return;
+	if (Pawn->ActorHasTag(FName("Player")))
+	{
+		CombatTarget = Pawn;
+		MoveToTarget(CombatTarget);
+		EnemyState = EEnemyState::EES_Chasing;
+		GetWorldTimerManager().ClearTimer(PatrolTimer);
+		GetCharacterMovement()->MaxWalkSpeed = 300.f;
+		UE_LOG(LogTemp, Warning, TEXT("Pawn Seen, now chasing"));
+	}
 }
 
 void AEnemy::PlayHitReactMontage(FName SectionName)
@@ -178,8 +188,16 @@ void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	//Hide Health Bar if the player is far away
-	CheckCombatTarget();
-	CheckPatrolTarget();
+	if (EnemyState > EEnemyState::EES_Patrolling)
+	{
+		CheckCombatTarget();
+		
+	}
+	else
+	{
+		CheckPatrolTarget();
+	}
+
 
 }
 

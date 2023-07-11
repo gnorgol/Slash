@@ -83,6 +83,8 @@ private:
 	float WaitMin = 5.f;
 	UPROPERTY(EditInstanceOnly, Category = "AI Navigation")
 	float WaitMax = 10.f;
+
+	EEnemyState EnemyState = EEnemyState::EES_Patrolling;
 	/*
 	Navigations
 	*/
