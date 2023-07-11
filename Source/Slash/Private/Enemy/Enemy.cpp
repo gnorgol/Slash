@@ -160,10 +160,16 @@ void AEnemy::PawnSeen(APawn* Pawn)
 	if (Pawn->ActorHasTag(FName("Player")))
 	{
 		CombatTarget = Pawn;
-		MoveToTarget(CombatTarget);
-		EnemyState = EEnemyState::EES_Chasing;
 		GetWorldTimerManager().ClearTimer(PatrolTimer);
 		GetCharacterMovement()->MaxWalkSpeed = 300.f;
+		if (EnemyState != EEnemyState::EES_Attacking)
+		{
+			EnemyState = EEnemyState::EES_Chasing;
+			MoveToTarget(CombatTarget);
+			UE_LOG(LogTemp, Warning, TEXT("Pawn Seen %s"), *Pawn->GetName());
+		}
+
+		
 	}
 }
 
@@ -224,7 +230,25 @@ void AEnemy::CheckCombatTarget()
 		EnemyState = EEnemyState::EES_Patrolling;
 		GetCharacterMovement()->MaxWalkSpeed = 125.f;
 		MoveToTarget(PatrolTarget);
+		UE_LOG(LogTemp, Warning, TEXT("Lost Target"));
 	}
+	else if (!InTargetRange(CombatTarget, AttackRadius) && EnemyState != EEnemyState::EES_Chasing)
+	{
+		// Outside attack range, chase target
+		EnemyState = EEnemyState::EES_Chasing;
+		GetCharacterMovement()->MaxWalkSpeed = 300.f;
+		MoveToTarget(CombatTarget);
+		UE_LOG(LogTemp, Warning, TEXT("Chasing Target"));
+	}
+	else if (InTargetRange(CombatTarget, AttackRadius) && EnemyState != EEnemyState::EES_Attacking)
+	{
+		// Inside attack range, attack target
+		EnemyState = EEnemyState::EES_Attacking;
+		UE_LOG(LogTemp, Warning, TEXT("Attacking Target"));
+		
+	}
+
+
 }
 
 // Called to bind functionality to input

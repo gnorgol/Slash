@@ -73,6 +73,9 @@ private:
 	double CombatRadius = 500.0f;
 
 	UPROPERTY(EditAnywhere)
+	double AttackRadius = 150.0f;
+
+	UPROPERTY(EditAnywhere)
 	double PatrolRadius = 200.f;
 
 	FTimerHandle PatrolTimer;
