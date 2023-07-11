@@ -11,6 +11,7 @@
 class UAnimMontage;
 class UAttributeComponent;
 class UHealthBarComponent;
+class UPawnSensingComponent;
 
 UCLASS()
 class SLASH_API AEnemy : public ACharacter, public IHitInterface
@@ -43,6 +44,10 @@ protected:
 	void MoveToTarget(AActor* Target);
 	AActor* ChoosePatrolTarget();
 
+	UFUNCTION()
+		void PawnSeen(APawn* Pawn);
+
+
 	/*
 	Play Montage function
 	*/
@@ -74,9 +79,9 @@ private:
 
 	void PatrolTimerFinished();
 
-	UPROPERTY(EditInstanceOnly, Category = "AI Nagigation")
+	UPROPERTY(EditInstanceOnly, Category = "AI Navigation")
 	float WaitMin = 5.f;
-	UPROPERTY(EditInstanceOnly, Category = "AI Nagigation")
+	UPROPERTY(EditInstanceOnly, Category = "AI Navigation")
 	float WaitMax = 10.f;
 	/*
 	Navigations
@@ -85,11 +90,17 @@ private:
 	class AAIController* EnemyController;
 
 	// Current Patrol Target
-	UPROPERTY(EditInstanceOnly, Category = "AI Nagigation")
-	AActor * PatrolTarget;
+	UPROPERTY(EditInstanceOnly, Category = "AI Navigation")
+	AActor* PatrolTarget;
 
-	UPROPERTY(EditInstanceOnly, Category = "AI Nagigation")
+	UPROPERTY(EditInstanceOnly, Category = "AI Navigation")
 		TArray<AActor*> PatrolPoints;
+
+	/*
+	  Components
+	*/
+	UPROPERTY(VisibleAnywhere)
+	UPawnSensingComponent* PawnSensing;
 
 	/*
 	Animation Montage
