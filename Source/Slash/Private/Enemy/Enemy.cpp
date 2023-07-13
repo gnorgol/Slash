@@ -142,7 +142,7 @@ void AEnemy::MoveToTarget(AActor* Target)
 	if(EnemyController == nullptr || Target == nullptr) return;
 	FAIMoveRequest MoveRequest;
 	MoveRequest.SetGoalActor(Target);
-	MoveRequest.SetAcceptanceRadius(15.0f);
+	MoveRequest.SetAcceptanceRadius(50.0f);
 	EnemyController->MoveTo(MoveRequest);
 	
 }
@@ -159,6 +159,40 @@ AActor* AEnemy::ChoosePatrolTarget()
 	}
 	if (ValidTarget.Num() == 0) return nullptr;
 	return ValidTarget[FMath::RandRange(0, ValidTarget.Num() - 1)];
+}
+
+void AEnemy::Attack()
+{
+	Super::Attack();
+	PlayAttackMontage();
+}
+
+void AEnemy::PlayAttackMontage()
+{
+	Super::PlayAttackMontage();
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && AttackMontage)
+	{
+		AnimInstance->Montage_Play(AttackMontage);
+		int32 Selection = FMath::RandRange(0, 2);
+		FName SectionName = FName();
+		switch (Selection)
+		{
+		case 0:
+			SectionName = FName("Attack1");
+			break;
+		case 1:
+			SectionName = FName("Attack2");
+			break;
+		case 2:
+			SectionName = FName("Attack3");
+			break;
+		default:
+			break;
+
+		}
+		AnimInstance->Montage_JumpToSection(SectionName, AttackMontage);
+	}
 }
 
 void AEnemy::PawnSeen(APawn* Pawn)
@@ -244,7 +278,7 @@ void AEnemy::CheckCombatTarget()
 		// Inside attack range, attack target
 		EnemyState = EEnemyState::EES_Attacking;
 
-		
+		Attack();
 	}
 
 
