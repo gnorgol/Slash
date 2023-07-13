@@ -95,7 +95,7 @@ void ASlashCharacter::Look(const FInputActionValue& Value)
 	
 }
 
-void ASlashCharacter::Equip(const FInputActionValue& Value)
+void ASlashCharacter::Equip()
 {		
 	AWeapon* OverlappingWeapon = Cast<AWeapon>(OverlappingItem);
 
@@ -126,7 +126,7 @@ void ASlashCharacter::Equip(const FInputActionValue& Value)
 	
 }
 
-void ASlashCharacter::Attack(const FInputActionValue& Value)
+void ASlashCharacter::Attack()
 {
 	if (CanAttack())
 	{
@@ -237,12 +237,4 @@ void ASlashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 }
 
-void ASlashCharacter::SetWeaponCollisionEnabled(ECollisionEnabled::Type CollisionType)
-{
-	if (EquippedWeapon && EquippedWeapon->GetWeaponBox())
-	{
-		EquippedWeapon->GetWeaponBox()->SetCollisionEnabled(CollisionType);
-		EquippedWeapon->IgnoreActors.Empty();
-	}
-}
 

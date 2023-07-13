@@ -25,7 +25,7 @@ AEnemy::AEnemy()
 	GetMesh()->SetGenerateOverlapEvents(true);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 
-	Attributes = CreateDefaultSubobject<UAttributeComponent>(TEXT("Attributes"));
+	
 
 	HealthBarWidget = CreateDefaultSubobject<UHealthBarComponent>(TEXT("HealthBar"));
 	HealthBarWidget->SetupAttachment(GetRootComponent());
@@ -63,8 +63,6 @@ void AEnemy::BeginPlay()
 
 void AEnemy::Die()
 {
-
-
 	//Play Death Montage
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	if (AnimInstance && DeathMontage)
@@ -173,15 +171,6 @@ void AEnemy::PawnSeen(APawn* Pawn)
 	}
 }
 
-void AEnemy::PlayHitReactMontage(FName SectionName)
-{
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if (AnimInstance && HitReactMontage)
-	{
-		AnimInstance->Montage_Play(HitReactMontage);
-		AnimInstance->Montage_JumpToSection(SectionName, HitReactMontage);
-	}
-}
 
 void AEnemy::PatrolTimerFinished()
 {
@@ -286,58 +275,6 @@ void AEnemy::GetHit_Implementation(const FVector& ImpactPoint)
 	}
 
 
-}
-
-void AEnemy::DirectionalHitReact(const FVector& ImpactPoint)
-{
-
-	const FVector Forward = GetActorForwardVector();
-	//Lower Impact Point to the Enemy's Actor Location Z
-	const FVector ImpactLower(ImpactPoint.X, ImpactPoint.Y, GetActorLocation().Z);
-	const FVector ToHit = (ImpactLower - GetActorLocation()).GetSafeNormal();
-
-	//Foward * ToHit = |Forward| * |ToHit| * cos(Theta)
-	//|Forward| = 1, |ToHit| = 1, so cos(Theta) = Forward * ToHit
-	const double CosTheta = FVector::DotProduct(Forward, ToHit);
-	//Take the inverse cosine (arccos) of cos(Theta) to get Theta
-	double Theta = FMath::Acos(CosTheta);
-	//Convert from radians to degrees
-	Theta = FMath::RadiansToDegrees(Theta);
-
-	//if CrossProduct points down, then the angle is negative
-	const FVector CrossProduct = FVector::CrossProduct(Forward, ToHit);
-
-	if (CrossProduct.Z < 0.f)
-	{
-		Theta = -Theta;
-	}
-
-	FName SectionName("FromBack");
-	if (Theta >= -45.f && Theta < 45.f)
-	{
-		SectionName = FName("FromFront");
-	}
-	else if (Theta >= -135.f && Theta < -45.f)
-	{
-		SectionName = FName("FromLeft");
-	}
-	else if (Theta >= 45.f && Theta < 135.f)
-	{
-		SectionName = FName("FromRight");
-	}
-
-	PlayHitReactMontage(SectionName);
-
-
-	//UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + CrossProduct * 100.f, 10.f, FColor::Orange, 15.f);
-
-	//if (GEngine)
-	//{
-	//	GEngine->AddOnScreenDebugMessage(1, 5.f, FColor::Red, FString::Printf(TEXT("Theta: %f"), Theta));
-
-	//}
-	//UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + Forward * 60.f, 10.f, FColor::Red, 15.f);
-	//UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + ToHit * 60.f, 10.f, FColor::Green, 15.f);
 }
 
 float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
