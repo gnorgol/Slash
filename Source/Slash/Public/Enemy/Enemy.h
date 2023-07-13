@@ -21,13 +21,7 @@ public:
 	// Sets default values for this character's properties
 	AEnemy();
 	virtual void Tick(float DeltaTime) override;
-
-	void CheckPatrolTarget();
-
-	void CheckCombatTarget();
-
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
+	/* <IHitInterfaces> */
 	virtual void GetHit_Implementation(const FVector& ImpactPoint) override;
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
@@ -35,28 +29,28 @@ public:
 protected:
 	
 	virtual void BeginPlay() override;
-
 	virtual void Die() override;
 	bool InTargetRange(AActor* Target, double Radius);
 	void MoveToTarget(AActor* Target);
 	AActor* ChoosePatrolTarget();
 	virtual void Attack() override;
-	virtual void PlayAttackMontage() override;
+	virtual void AttackEnd() override;
+	virtual bool CanAttack() override;
+	virtual void HandleDamage(float DamageAmount) override;
+	virtual int32 PlayDeathMontage() override;
 
 	UFUNCTION()
-		void PawnSeen(APawn* Pawn);
-
-
-
+		void PawnSeen(APawn* Pawn); //Callback for OnPawnSeen in UPawnSensingComponent
 
 	UPROPERTY(BlueprintReadOnly)
-	EDeathPose DeathPose = EDeathPose::EDP_Alive;
+	TEnumAsByte<EDeathPose> DeathPose;
+
+	UPROPERTY(BlueprintReadOnly)
+	EEnemyState EnemyState = EEnemyState::EES_Patrolling;
 
 public:	
 
 private:
-
-
 
 	UPROPERTY(VisibleAnywhere)
 	UHealthBarComponent* HealthBarWidget;
@@ -68,7 +62,7 @@ private:
 	AActor* CombatTarget;
 
 	UPROPERTY(EditAnywhere)
-	double CombatRadius = 500.0f;
+	double CombatRadius = 800.0f;
 
 	UPROPERTY(EditAnywhere)
 	double AttackRadius = 150.0f;
@@ -81,11 +75,47 @@ private:
 	void PatrolTimerFinished();
 
 	UPROPERTY(EditInstanceOnly, Category = "AI Navigation")
-	float WaitMin = 5.f;
+	float PatrolWaitMin = 5.f;
 	UPROPERTY(EditInstanceOnly, Category = "AI Navigation")
-	float WaitMax = 10.f;
+	float PatrolWaitMax = 10.f;
+	/*
+	Ai Behavior
+	*/
+	void InitializeEnemy();
+	void HideHealthBar();
+	void ShowHealthBar();
+	void LoseInterest();
+	void StartPatrolling();
+	void ChaseTarget();
+	bool IsOutSideCombatRadius();
+	bool IsOutSideAttackRadius();
+	bool IsInsideAttackRadius();
+	bool IsChasing();
+	bool IsAttacking();
+	bool IsDead();
+	bool IsEngaged();
+	void ClearPatrolTimer();
+	void CheckPatrolTarget();
+	void CheckCombatTarget();
+	void SpawnDefaultWeapon();
+	/*
+	Combat
+	*/
+	void StartAttackTimer();
+	void ClearAttackTimer();
+	FTimerHandle AttackTimer;
+	UPROPERTY(EditAnywhere, Category = Combat)
+	float AttackMin = 0.5f;
+	UPROPERTY(EditAnywhere, Category = Combat)
+	float AttackMax = 1.f;
 
-	EEnemyState EnemyState = EEnemyState::EES_Patrolling;
+	UPROPERTY(EditAnywhere , Category = Combat)
+	float PatrollingSpeed = 125.f;
+
+	UPROPERTY(EditAnywhere, Category = Combat)
+	float ChasingSpeed = 300.f;
+	UPROPERTY(EditAnywhere, Category = Combat)
+		float DeathLifeSpan = 8.f;
 	/*
 	Navigations
 	*/
@@ -104,11 +134,4 @@ private:
 	*/
 	UPROPERTY(VisibleAnywhere)
 	UPawnSensingComponent* PawnSensing;
-
-
-	
-
-
-
-
 };

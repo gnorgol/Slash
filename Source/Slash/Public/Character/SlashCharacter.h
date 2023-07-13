@@ -28,11 +28,18 @@ class SLASH_API ASlashCharacter : public ABaseCharacter
 public:
 	// Sets default values for this character's properties
 	ASlashCharacter();
-
-	virtual void Tick(float DeltaTime) override;
-
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+protected:
 
+	virtual void BeginPlay() override;
+
+	/*
+	* Callback functions for input actions
+	*/
+	void Move(const FInputActionValue& Value);
+	void Look(const FInputActionValue& Value);
+	void Equip();
+	virtual void Attack() override;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputMappingContext* SlashCharacterMappingContext;
 
@@ -49,42 +56,30 @@ public:
 	UInputAction* EquipAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-	UInputAction* AttackAction;
-
-	/*
-	* Callback functions for input actions
-	*/
-	void Move(const FInputActionValue& Value);
-	void Look(const FInputActionValue& Value);
-	void Equip();
-	virtual void Attack() override;
-
-	/*
-	Play Montage function
-	*/
-	virtual void PlayAttackMontage() override;
-	
-	virtual void AttackEnd() override;
-	
-	virtual bool CanAttack() override;
-
+	UInputAction* AttackAction;	
 	void PlayEquipMontage(const FName SectionName);
 	bool CanDisarm();
 	bool CanArm();
-
-	UFUNCTION(BlueprintCallable)
 	void Disarm();
-
-	UFUNCTION(BlueprintCallable)
 	void Arm();
 
 	UFUNCTION(BlueprintCallable)
+	void AttachWeaponToBack();
+
+	UFUNCTION(BlueprintCallable)
+	void AttachWeaponToHand();
+
+	UFUNCTION(BlueprintCallable)
 	void FinishEquipping();
+	/*
+	Play Montage function
+	*/
+	
 
-protected:
-
-	virtual void BeginPlay() override;
-
+	void EquipWeapon(AWeapon* Weapon);
+	virtual void AttackEnd() override;
+	
+	virtual bool CanAttack() override;
 private:
 
 	ECharacterState CharacterState = ECharacterState::ECS_Unequipped;
@@ -92,6 +87,7 @@ private:
 	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	EActionState ActionState = EActionState::EAS_Unoccupied;
 
+	/*Character Component */
 	UPROPERTY(VisibleAnywhere)
 		USpringArmComponent* SpringArm;
 
