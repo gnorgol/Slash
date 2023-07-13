@@ -11,6 +11,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Components/AttributeComponent.h"
 #include "HUD/HealthBarComponent.h"
+#include "Items/Weapons/Weapon.h"
 #include "AIController.h"
 
 // Sets default values
@@ -56,6 +57,15 @@ void AEnemy::BeginPlay()
 	if (PawnSensing)
 	{
 		PawnSensing->OnSeePawn.AddDynamic(this, &AEnemy::PawnSeen);
+	}
+
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		AWeapon* DefaultWeapon = World->SpawnActor<AWeapon>(WeaponClass);
+		DefaultWeapon->Equip(GetMesh(),FName("RightHandSocket"),this,this);
+		EquippedWeapon = DefaultWeapon;
+
 	}
 
 	//GetWorldTimerManager().SetTimer(PatrolTimer, this, &AEnemy::PatrolTimerFinished,5.f);
@@ -294,5 +304,13 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 	MoveToTarget(CombatTarget);
 
 	return DamageAmount;
+}
+
+void AEnemy::Destroyed()
+{
+	if (EquippedWeapon)
+	{
+		EquippedWeapon->Destroy();
+	}
 }
 
