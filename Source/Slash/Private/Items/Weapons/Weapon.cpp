@@ -35,17 +35,31 @@ void AWeapon::Equip(USceneComponent* InParent, FName InSocketName, AActor* NewOw
 	SetInstigator(NewInstigator);
 	AttachMeshToSocket(InParent, InSocketName);
 	ItemState = EItemState::EIS_Equipped;
-	if (EquipSound)
-	{
-		UGameplayStatics::PlaySoundAtLocation(this, EquipSound, GetActorLocation());
+	DisableSphereCollision();
+	PlayEquipSound();	
+	DeactivateEmbers();
+}
 
+void AWeapon::DeactivateEmbers()
+{
+	if (EmbersEffect) {
+		EmbersEffect->Deactivate();
 	}
+}
+
+void AWeapon::DisableSphereCollision()
+{
 	if (Sphere)
 	{
 		Sphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
-	if (EmbersEffect) {
-		EmbersEffect->Deactivate();
+}
+
+void AWeapon::PlayEquipSound()
+{
+	if (EquipSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, EquipSound, GetActorLocation());
 	}
 }
 
@@ -55,23 +69,44 @@ void AWeapon::AttachMeshToSocket(USceneComponent* InParent, const FName& InSocke
 	ItemMesh->AttachToComponent(InParent, AttachmentRules, InSocketName);
 }
 
-
-
-void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	Super::OnSphereOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
-	ACharacter* SlashCharacter = Cast<ASlashCharacter>(OtherActor);
-}
-
-
-
-void AWeapon::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-	Super::OnSphereEndOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex);
-
-}
-
 void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (ActorIsSameType(OtherActor))
+	{
+		return;
+	}
+	FHitResult BoxHit;
+	BoxTrace(BoxHit);
+	
+	if (BoxHit.GetActor())
+	{
+		if (ActorIsSameType(BoxHit.GetActor()))
+		{
+			return;
+		}
+		UGameplayStatics::ApplyDamage(BoxHit.GetActor(), Damage, GetInstigator()->GetController(), this, UDamageType::StaticClass());
+
+		ExecuteGetHit(BoxHit);
+		CreateFields(BoxHit.ImpactPoint);
+	}
+	
+}
+
+bool AWeapon::ActorIsSameType(AActor* OtherActor)
+{
+	return GetOwner()->ActorHasTag(TEXT("Enemy")) && OtherActor->ActorHasTag(TEXT("Enemy"));
+}
+
+void AWeapon::ExecuteGetHit(FHitResult& BoxHit)
+{
+	IHitInterface* HitInterface = Cast<IHitInterface>(BoxHit.GetActor());
+	if (HitInterface)
+	{
+		HitInterface->Execute_GetHit(BoxHit.GetActor(), BoxHit.ImpactPoint);
+	}
+}
+
+void AWeapon::BoxTrace(FHitResult& BoxHit)
 {
 	const FVector Start = BoxTraceStart->GetComponentLocation();
 	const FVector End = BoxTraceEnd->GetComponentLocation();
@@ -82,26 +117,8 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 	{
 		ActorsToIgnore.AddUnique(Actor);
 	}
-	
 
-	FHitResult BoxHit;
-
-	UKismetSystemLibrary::BoxTraceSingle(this, Start, End, FVector(5.f, 5.f, 5.f), BoxTraceStart->GetComponentRotation(), ETraceTypeQuery::TraceTypeQuery1, false, ActorsToIgnore, EDrawDebugTrace::None, BoxHit, true);
-	UGameplayStatics::ApplyDamage(BoxHit.GetActor(), Damage, GetInstigator()->GetController(), this, UDamageType::StaticClass());
-	if (BoxHit.GetActor())
-	{
-		IHitInterface* HitInterface = Cast<IHitInterface>(BoxHit.GetActor());
-		if (HitInterface)
-		{
-			HitInterface->Execute_GetHit(BoxHit.GetActor(), BoxHit.ImpactPoint);
-		}
-		IgnoreActors.AddUnique(BoxHit.GetActor());
-
-		CreateFields(BoxHit.ImpactPoint);
-
-		
-
-	}
-	
+	UKismetSystemLibrary::BoxTraceSingle(this, Start, End, BoxTraceExtent, BoxTraceStart->GetComponentRotation(), ETraceTypeQuery::TraceTypeQuery1, false, ActorsToIgnore,bShowBoxDebug? EDrawDebugTrace::ForDuration : EDrawDebugTrace::None, BoxHit, true);
+	IgnoreActors.AddUnique(BoxHit.GetActor());
 }
 
