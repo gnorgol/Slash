@@ -73,7 +73,7 @@ void AEnemy::Die()
 	HideHealthBar();
 	//Disable Collision
 	DisableCapsuleCollision();
-
+	SetWeaponCollisionEnabled(ECollisionEnabled::NoCollision);
 	//Set Life Span
 	SetLifeSpan(DeathLifeSpan);
 
@@ -208,6 +208,7 @@ void AEnemy::StartPatrolling()
 	GetCharacterMovement()->MaxWalkSpeed = PatrollingSpeed;
 	MoveToTarget(PatrolTarget);
 }
+
 void AEnemy::ChaseTarget()
 {
 	EnemyState = EEnemyState::EES_Chasing;
@@ -324,7 +325,8 @@ void AEnemy::CheckCombatTarget()
 void AEnemy::GetHit_Implementation(const FVector& ImpactPoint)
 {
 	Super::GetHit_Implementation(ImpactPoint);
-	ShowHealthBar();
+	if (!IsDead()) ShowHealthBar();
+	ClearPatrolTimer();
 
 }
 
