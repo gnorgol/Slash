@@ -24,5 +24,5 @@ class SLASH_API IHitInterface
 public:
 	/** Called when the actor is hit by a weapon. */
 	UFUNCTION(BlueprintNativeEvent)
-	void GetHit(const FVector& ImpactPoint);
+	void GetHit(const FVector& ImpactPoint, AActor* Hitter);
 };

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
+#include "BaseCharacter.h"
 #include "InputActionValue.h"
 #include "CharacterTypes.h"
 #include "SlashCharacter.generated.h"
@@ -16,27 +16,31 @@ class UCameraComponent;
 class UGroomComponent;
 class AItem;
 class UAnimMontage;
-class AWeapon;
 
 
 
 
 UCLASS()
-class SLASH_API ASlashCharacter : public ACharacter
+class SLASH_API ASlashCharacter : public ABaseCharacter
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this character's properties
 	ASlashCharacter();
-
-	virtual void Tick(float DeltaTime) override;
-
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void GetHit_Implementation(const FVector& ImpactPoint, AActor* Hitter) override;
+protected:
 
-	UFUNCTION(BlueprintCallable)
-		void SetWeaponCollisionEnabled(ECollisionEnabled::Type CollisionType);
+	virtual void BeginPlay() override;
 
+	/*
+	* Callback functions for input actions
+	*/
+	void Move(const FInputActionValue& Value);
+	void Look(const FInputActionValue& Value);
+	void Equip();
+	virtual void Attack() override;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputMappingContext* SlashCharacterMappingContext;
 
@@ -53,41 +57,33 @@ public:
 	UInputAction* EquipAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-	UInputAction* AttackAction;
-
-	/*
-	* Callback functions for input actions
-	*/
-	void Move(const FInputActionValue& Value);
-	void Look(const FInputActionValue& Value);
-	void Equip(const FInputActionValue& Value);
-	void Attack(const FInputActionValue& Value);
-
-	/*
-	Play Montage function
-	*/
-	void PlayAttackMontage();
-	UFUNCTION(BlueprintCallable)
-		void AttackEnd();
-	bool CanAttack();
-
+	UInputAction* AttackAction;	
 	void PlayEquipMontage(const FName SectionName);
 	bool CanDisarm();
 	bool CanArm();
-
-	UFUNCTION(BlueprintCallable)
 	void Disarm();
+	void Arm();
 
 	UFUNCTION(BlueprintCallable)
-	void Arm();
+	void AttachWeaponToBack();
+
+	UFUNCTION(BlueprintCallable)
+	void AttachWeaponToHand();
 
 	UFUNCTION(BlueprintCallable)
 	void FinishEquipping();
 
-protected:
+	UFUNCTION(BlueprintCallable)
+	void HitReactEnd();
+	/*
+	Play Montage function
+	*/
+	
 
-	virtual void BeginPlay() override;
-
+	void EquipWeapon(AWeapon* Weapon);
+	virtual void AttackEnd() override;
+	
+	virtual bool CanAttack() override;
 private:
 
 	ECharacterState CharacterState = ECharacterState::ECS_Unequipped;
@@ -95,6 +91,7 @@ private:
 	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	EActionState ActionState = EActionState::EAS_Unoccupied;
 
+	/*Character Component */
 	UPROPERTY(VisibleAnywhere)
 		USpringArmComponent* SpringArm;
 
@@ -110,14 +107,11 @@ private:
 	UPROPERTY(VisibleInstanceOnly)
 	AItem* OverlappingItem;
 
-	UPROPERTY(VisibleAnywhere, Category = "Weapon")
-	AWeapon* EquippedWeapon;
+
 
 	/*
 	Animation Montage
 	*/
-	UPROPERTY(EditDefaultsOnly, Category = Montages)
-		UAnimMontage* AttackMontage;
 	UPROPERTY(EditDefaultsOnly, Category = Montages)
 		UAnimMontage* EquipMontage;
 
