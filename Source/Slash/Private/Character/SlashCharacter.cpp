@@ -14,6 +14,9 @@
 #include "Item.h"
 #include "Animation/AnimMontage.h"
 #include "Items/Weapons/Weapon.h"
+#include "HUD/SlashHUD.h"
+#include "HUD/SlashOverlay.h"
+#include "Components/AttributeComponent.h"
 
 
 // Sets default values
@@ -64,6 +67,8 @@ void ASlashCharacter::BeginPlay()
 
 	Tags.Add(FName("Player"));
 
+	InitializeSlashOverlay();
+
 	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 	{
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
@@ -71,7 +76,28 @@ void ASlashCharacter::BeginPlay()
 			Subsystem->AddMappingContext(SlashCharacterMappingContext,0);
 		}
 	}
-	
+}
+
+void ASlashCharacter::InitializeSlashOverlay()
+{
+
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (PlayerController)
+	{
+		ASlashHUD* SlashHUD = Cast<ASlashHUD>(PlayerController->GetHUD());
+		if (SlashHUD)
+		{
+			SlashOverlay = SlashHUD->GetSlashOverlay();
+
+			if (SlashOverlay && Attributes)
+			{
+				SlashOverlay->SetHealthPercent(Attributes->GetHealthPercent());
+				SlashOverlay->SetStaminaPercent(.1f);
+				SlashOverlay->SetGold(0);
+				SlashOverlay->SetSoul(0);
+			}
+		}
+	}
 }
 
 void ASlashCharacter::Move(const FInputActionValue& Value)
@@ -90,6 +116,20 @@ void ASlashCharacter::Move(const FInputActionValue& Value)
 	AddMovementInput(RightDirection, MovementVector.Y);
 }
 
+void ASlashCharacter::Jump()
+{
+	if (IsUnoccupied())
+	{
+		Super::Jump();
+	}
+	
+}
+
+bool ASlashCharacter::IsUnoccupied()
+{
+	return ActionState == EActionState::EAS_Unoccupied;
+}
+
 void ASlashCharacter::Look(const FInputActionValue& Value)
 {
 	const FVector2D LookVector = Value.Get<FVector2D>();
@@ -100,6 +140,7 @@ void ASlashCharacter::Look(const FInputActionValue& Value)
 	AddControllerYawInput(LookVector.X);
 	
 }
+
 
 void ASlashCharacter::Equip()
 {		
@@ -222,9 +263,7 @@ void ASlashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ASlashCharacter::Look);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ASlashCharacter::Jump);
 		EnhancedInputComponent->BindAction(EquipAction, ETriggerEvent::Started, this, &ASlashCharacter::Equip);
-		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ASlashCharacter::Attack);
-		//debug if jump is working
-		
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ASlashCharacter::Attack);		
 	}
 
 }
@@ -240,7 +279,18 @@ void ASlashCharacter::GetHit_Implementation(const FVector& ImpactPoint, AActor* 
 float ASlashCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	HandleDamage(DamageAmount);
-	return 0.0f;
+	SetHUDHealth();
+
+	return DamageAmount;
+
+}
+
+void ASlashCharacter::SetHUDHealth()
+{
+	if (SlashOverlay && Attributes)
+	{
+		SlashOverlay->SetHealthPercent(Attributes->GetHealthPercent());
+	}
 }
 
 
