@@ -114,8 +114,12 @@ AActor* AEnemy::ChoosePatrolTarget()
 void AEnemy::Attack()
 {
 	Super::Attack();
-	PlayAttackMontage();
+	if (CombatTarget == nullptr)
+	{
+		return;
+	}
 	EnemyState = EEnemyState::EES_Engaged;
+	PlayAttackMontage();
 }
 
 void AEnemy::AttackEnd()
@@ -290,7 +294,7 @@ void AEnemy::CheckCombatTarget()
 	{
 		ClearAttackTimer();
 		LoseInterest();
-		if(IsEngaged())
+		if(!IsEngaged())
 		{
 			StartPatrolling();
 		}
