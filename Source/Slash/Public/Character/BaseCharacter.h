@@ -5,7 +5,9 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Interfaces/HitInterface.h"
+#include "Character/CharacterTypes.h"
 #include "BaseCharacter.generated.h"
+
 
 
 class AWeapon;
@@ -36,6 +38,7 @@ protected:
 	virtual void HandleDamage(float DamageAmount);
 	void DisableCapsuleCollision();
 	bool IsAlive();
+	void DisableMeshCollision();
 
 	/* Montages */
 	virtual int32 PlayAttackMontage();
@@ -79,6 +82,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = Combat)
 	double WarpTargetDistance = 25.f;
+
+	UPROPERTY(BlueprintReadOnly)
+		TEnumAsByte<EDeathPose> DeathPose;
 private:
 
 	void PlayMontageSection(UAnimMontage* Montage, const FName& SectionName);
@@ -102,4 +108,6 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = Montages)
 		UAnimMontage* DeathMontage;
 
+public:
+	FORCEINLINE TEnumAsByte<EDeathPose> GetDeathPose() const { return DeathPose; }
 };
