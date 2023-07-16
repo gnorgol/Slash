@@ -20,4 +20,5 @@ private:
 	int32 SoulValue;
 public:
 	FORCEINLINE int32 GetSoulValue() const { return SoulValue; }
+	FORCEINLINE void SetSoulValue(int32 Value) { SoulValue = Value; }
 };

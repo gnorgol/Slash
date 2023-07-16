@@ -30,6 +30,7 @@ protected:
 	
 	virtual void BeginPlay() override;
 	virtual void Die() override;
+	void SpawnSoul();
 	bool InTargetRange(AActor* Target, double Radius);
 	void MoveToTarget(AActor* Target);
 	AActor* ChoosePatrolTarget();
@@ -113,6 +114,9 @@ private:
 	float ChasingSpeed = 300.f;
 	UPROPERTY(EditAnywhere, Category = Combat)
 	float DeathLifeSpan = 8.f;
+
+	UPROPERTY(EditAnywhere, Category = Combat)
+	TSubclassOf<class ASoul> SoulClass;
 	/*
 	Navigations
 	*/
