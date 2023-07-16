@@ -50,9 +50,9 @@ protected:
 	*/
 	void Move(const FInputActionValue& Value);
 	virtual void Jump() override;
-
 	void Look(const FInputActionValue& Value);
 	void Equip();
+	void Dodge();
 	virtual void Attack() override;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputMappingContext* SlashCharacterMappingContext;
@@ -71,6 +71,10 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* AttackAction;	
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* DodgeAction;
+
 	void PlayEquipMontage(const FName SectionName);
 	bool CanDisarm();
 	bool CanArm();
@@ -96,15 +100,15 @@ protected:
 
 	void EquipWeapon(AWeapon* Weapon);
 	virtual void AttackEnd() override;
-	
 	virtual bool CanAttack() override;
+	virtual void DodgeEnd() override;
 private:
 	bool IsUnoccupied();
 	void InitializeSlashOverlay();
 	void SetHUDHealth();
 	ECharacterState CharacterState = ECharacterState::ECS_Unequipped;
 
-	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere,BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	EActionState ActionState = EActionState::EAS_Unoccupied;
 
 	/*Character Component */

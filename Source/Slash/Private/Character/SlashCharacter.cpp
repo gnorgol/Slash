@@ -166,6 +166,16 @@ void ASlashCharacter::Equip()
 	
 }
 
+void ASlashCharacter::Dodge()
+{
+	if (ActionState != EActionState::EAS_Unoccupied)
+	{
+		return;
+	}
+	PlayDodgeMontage();
+	ActionState = EActionState::EAS_Dodging;
+}
+
 void ASlashCharacter::Attack()
 {
 	Super::Attack();
@@ -181,6 +191,12 @@ bool ASlashCharacter::CanAttack()
 	return ActionState == EActionState::EAS_Unoccupied &&
 		ActionState != EActionState::EAS_HitReaction &&
 		CharacterState == ECharacterState::ECS_EquippedOneHandedWeapon;
+}
+
+void ASlashCharacter::DodgeEnd()
+{
+	Super::DodgeEnd();
+	ActionState = EActionState::EAS_Unoccupied;
 }
 
 void ASlashCharacter::PlayEquipMontage(FName SectionName)
@@ -272,7 +288,8 @@ void ASlashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ASlashCharacter::Look);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ASlashCharacter::Jump);
 		EnhancedInputComponent->BindAction(EquipAction, ETriggerEvent::Started, this, &ASlashCharacter::Equip);
-		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ASlashCharacter::Attack);		
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ASlashCharacter::Attack);
+		EnhancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Triggered, this, &ASlashCharacter::Dodge);
 	}
 
 }

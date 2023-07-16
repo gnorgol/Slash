@@ -44,6 +44,7 @@ protected:
 	virtual int32 PlayAttackMontage();
 	void PlayHitReactMontage(const FName SectionName);
 	virtual int32 PlayDeathMontage();
+	virtual void PlayDodgeMontage();
 	void StopAttackMontage();
 
 	UFUNCTION(BlueprintCallable)
@@ -58,6 +59,8 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	virtual void AttackEnd();
+	UFUNCTION(BlueprintCallable)
+	virtual void DodgeEnd();
 
 	UPROPERTY(VisibleAnywhere, Category = Weapon)
 		AWeapon* EquippedWeapon;
@@ -107,6 +110,8 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = Montages)
 		UAnimMontage* DeathMontage;
+	UPROPERTY(EditDefaultsOnly, Category = Montages)
+		UAnimMontage* DodgeMontage;
 
 public:
 	FORCEINLINE TEnumAsByte<EDeathPose> GetDeathPose() const { return DeathPose; }
