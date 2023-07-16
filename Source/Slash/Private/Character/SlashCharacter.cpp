@@ -287,6 +287,16 @@ void ASlashCharacter::GetHit_Implementation(const FVector& ImpactPoint, AActor* 
 
 }
 
+void ASlashCharacter::SetOverlappingItem(AItem* Item)
+{
+	OverlappingItem = Item;
+}
+
+void ASlashCharacter::AddSouls(ASoul* Soul)
+{
+	UE_LOG(LogTemp, Warning, TEXT("AddSouls"));
+}
+
 float ASlashCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	HandleDamage(DamageAmount);
