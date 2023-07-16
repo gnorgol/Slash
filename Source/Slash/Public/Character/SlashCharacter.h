@@ -32,6 +32,7 @@ class SLASH_API ASlashCharacter : public ABaseCharacter, public IPickupInterface
 public:
 	// Sets default values for this character's properties
 	ASlashCharacter();
+	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void GetHit_Implementation(const FVector& ImpactPoint, AActor* Hitter) override;
 	virtual void SetOverlappingItem(AItem* Item);
@@ -53,6 +54,8 @@ protected:
 	void Look(const FInputActionValue& Value);
 	void Equip();
 	void Dodge();
+	bool HasEnoughStamina();
+	bool IsOccupied();
 	virtual void Attack() override;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputMappingContext* SlashCharacterMappingContext;

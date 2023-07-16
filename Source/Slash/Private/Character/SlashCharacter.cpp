@@ -60,6 +60,15 @@ ASlashCharacter::ASlashCharacter()
 
 }
 
+void ASlashCharacter::Tick(float DeltaTime)
+{
+	if (Attributes && SlashOverlay)
+	{
+		Attributes->RegenStamina(DeltaTime);
+		SlashOverlay->SetStaminaPercent(Attributes->GetStaminaPercent());
+	}
+}
+
 
 
 // Called when the game starts or when spawned
@@ -168,12 +177,27 @@ void ASlashCharacter::Equip()
 
 void ASlashCharacter::Dodge()
 {
-	if (ActionState != EActionState::EAS_Unoccupied)
+	if (IsOccupied() || !HasEnoughStamina())
 	{
 		return;
 	}
 	PlayDodgeMontage();
 	ActionState = EActionState::EAS_Dodging;
+	if (Attributes && SlashOverlay)
+	{
+		Attributes->UseStamina(Attributes->GetDodgeCost());
+		SlashOverlay->SetStaminaPercent(Attributes->GetStaminaPercent());
+	}
+}
+
+bool ASlashCharacter::HasEnoughStamina()
+{
+	return Attributes && Attributes->GetStamina() > Attributes->GetDodgeCost();
+}
+
+bool ASlashCharacter::IsOccupied()
+{
+	return ActionState != EActionState::EAS_Unoccupied;
 }
 
 void ASlashCharacter::Attack()
