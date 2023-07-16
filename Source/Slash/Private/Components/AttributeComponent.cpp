@@ -56,6 +56,10 @@ void UAttributeComponent::AddSouls(int32 Amount)
 	Souls += Amount;
 }
 
+void UAttributeComponent::AddHealth(float Amount)
+{
+	Health = FMath::Clamp(Health + Amount, 0.f, MaxHealth);
+}
 
 void UAttributeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {

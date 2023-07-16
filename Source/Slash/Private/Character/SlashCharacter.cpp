@@ -18,6 +18,7 @@
 #include "HUD/SlashOverlay.h"
 #include "Components/AttributeComponent.h"
 #include "Items/Soul.h"
+#include "Items/Health.h"
 #include "Items/Treasure.h"
 
 
@@ -350,6 +351,15 @@ void ASlashCharacter::AddGold(ATreasure* Treasure)
 	{
 		Attributes->AddGold(Treasure->GetGoldValue());
 		SlashOverlay->SetGold(Attributes->GetGold());
+	}
+}
+
+void ASlashCharacter::AddHealth(AHealth* Health)
+{
+	if (Attributes && SlashOverlay)
+	{
+		Attributes->AddHealth(Health->GetHealthValue());
+		SlashOverlay->SetHealthPercent(Attributes->GetHealthPercent());
 	}
 }
 

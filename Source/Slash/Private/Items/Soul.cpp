@@ -13,8 +13,5 @@ void ASoul::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Ot
 		SpawnPickupSystem();
 		SpawnPickupSound();
 		Destroy();
-	}
-
-
-	
+	}	
 }
