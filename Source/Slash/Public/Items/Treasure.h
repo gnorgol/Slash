@@ -22,5 +22,6 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Treasure Properties")
 	int32 GoldValue;
-	
+public:
+	FORCEINLINE int32 GetGoldValue() const { return GoldValue; }
 };
