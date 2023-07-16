@@ -30,6 +30,7 @@ protected:
 	
 	virtual void BeginPlay() override;
 	virtual void Die() override;
+	void SpawnSoul();
 	bool InTargetRange(AActor* Target, double Radius);
 	void MoveToTarget(AActor* Target);
 	AActor* ChoosePatrolTarget();
@@ -37,13 +38,11 @@ protected:
 	virtual void AttackEnd() override;
 	virtual bool CanAttack() override;
 	virtual void HandleDamage(float DamageAmount) override;
-	virtual int32 PlayDeathMontage() override;
 
 	UFUNCTION()
 		void PawnSeen(APawn* Pawn); //Callback for OnPawnSeen in UPawnSensingComponent
 
-	UPROPERTY(BlueprintReadOnly)
-	TEnumAsByte<EDeathPose> DeathPose;
+
 
 	UPROPERTY(BlueprintReadOnly)
 	EEnemyState EnemyState = EEnemyState::EES_Patrolling;
@@ -114,7 +113,10 @@ private:
 	UPROPERTY(EditAnywhere, Category = Combat)
 	float ChasingSpeed = 300.f;
 	UPROPERTY(EditAnywhere, Category = Combat)
-		float DeathLifeSpan = 8.f;
+	float DeathLifeSpan = 8.f;
+
+	UPROPERTY(EditAnywhere, Category = Combat)
+	TSubclassOf<class ASoul> SoulClass;
 	/*
 	Navigations
 	*/
@@ -126,7 +128,7 @@ private:
 	AActor* PatrolTarget;
 
 	UPROPERTY(EditInstanceOnly, Category = "AI Navigation")
-		TArray<AActor*> PatrolPoints;
+	TArray<AActor*> PatrolPoints;
 
 	/*
 	  Components

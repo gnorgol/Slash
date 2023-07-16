@@ -6,6 +6,7 @@
 #include "BaseCharacter.h"
 #include "InputActionValue.h"
 #include "CharacterTypes.h"
+#include "Interfaces/PickupInterface.h"
 #include "SlashCharacter.generated.h"
 
 
@@ -15,31 +16,47 @@ class USpringArmComponent;
 class UCameraComponent;
 class UGroomComponent;
 class AItem;
+class ATreasure;
 class UAnimMontage;
+class USlashOverlay;
+class ASoul;
 
 
 
 
 UCLASS()
-class SLASH_API ASlashCharacter : public ABaseCharacter
+class SLASH_API ASlashCharacter : public ABaseCharacter, public IPickupInterface
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this character's properties
 	ASlashCharacter();
+	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void GetHit_Implementation(const FVector& ImpactPoint, AActor* Hitter) override;
+	virtual void SetOverlappingItem(AItem* Item);
+	virtual void AddSouls(ASoul* Soul) override;
+	virtual void AddGold(ATreasure* Treasure) override;
+	virtual void AddHealth(AHealth* Health) override;
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+	
 protected:
 
 	virtual void BeginPlay() override;
+
+	
 
 	/*
 	* Callback functions for input actions
 	*/
 	void Move(const FInputActionValue& Value);
+	virtual void Jump() override;
 	void Look(const FInputActionValue& Value);
 	void Equip();
+	void Dodge();
+	bool HasEnoughStamina();
+	bool IsOccupied();
 	virtual void Attack() override;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputMappingContext* SlashCharacterMappingContext;
@@ -58,11 +75,16 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* AttackAction;	
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* DodgeAction;
+
 	void PlayEquipMontage(const FName SectionName);
 	bool CanDisarm();
 	bool CanArm();
 	void Disarm();
 	void Arm();
+	virtual void Die() override;
 
 	UFUNCTION(BlueprintCallable)
 	void AttachWeaponToBack();
@@ -82,13 +104,15 @@ protected:
 
 	void EquipWeapon(AWeapon* Weapon);
 	virtual void AttackEnd() override;
-	
 	virtual bool CanAttack() override;
+	virtual void DodgeEnd() override;
 private:
-
+	bool IsUnoccupied();
+	void InitializeSlashOverlay();
+	void SetHUDHealth();
 	ECharacterState CharacterState = ECharacterState::ECS_Unequipped;
 
-	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere,BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	EActionState ActionState = EActionState::EAS_Unoccupied;
 
 	/*Character Component */
@@ -115,9 +139,12 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = Montages)
 		UAnimMontage* EquipMontage;
 
+	UPROPERTY()
+	USlashOverlay* SlashOverlay;
+
 public:
-	FORCEINLINE void SetOverlappingItem(AItem* Item) { OverlappingItem = Item;}
 	FORCEINLINE ECharacterState GetCharacterState() const { return CharacterState; }
+	FORCEINLINE EActionState GetActionState() const { return ActionState; }
 };
 
 

@@ -10,6 +10,7 @@
 #include "HUD/HealthBarComponent.h"
 #include "Items/Weapons/Weapon.h"
 #include "AIController.h"
+#include "Items/Soul.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -67,8 +68,8 @@ void AEnemy::SpawnDefaultWeapon()
 
 void AEnemy::Die()
 {
+	Super::Die();
 	EnemyState = EEnemyState::EES_Dead;
-	PlayDeathMontage();
 	ClearAttackTimer();
 	HideHealthBar();
 	//Disable Collision
@@ -78,6 +79,22 @@ void AEnemy::Die()
 	SetLifeSpan(DeathLifeSpan);
 
 	GetCharacterMovement()->bOrientRotationToMovement = false;
+
+	SpawnSoul();
+}
+
+void AEnemy::SpawnSoul()
+{
+	UWorld* World = GetWorld();
+	if (World && SoulClass && Attributes)
+	{
+		ASoul* SpawnedSoul = World->SpawnActor<ASoul>(SoulClass, GetActorLocation(), GetActorRotation());
+		if (SpawnedSoul)
+		{
+			SpawnedSoul->SetSoulValue(Attributes->GetSouls());
+		}
+		
+	}
 }
 
 bool AEnemy::InTargetRange(AActor* Target, double Radius)
@@ -114,8 +131,12 @@ AActor* AEnemy::ChoosePatrolTarget()
 void AEnemy::Attack()
 {
 	Super::Attack();
-	PlayAttackMontage();
+	if (CombatTarget == nullptr)
+	{
+		return;
+	}
 	EnemyState = EEnemyState::EES_Engaged;
+	PlayAttackMontage();
 }
 
 void AEnemy::AttackEnd()
@@ -142,18 +163,6 @@ void AEnemy::HandleDamage(float DamageAmount)
 	{
 		HealthBarWidget->SetHealthPercentage(Attributes->GetHealthPercent());
 	}
-}
-
-int32 AEnemy::PlayDeathMontage()
-{
-	const int32 Selection = Super::PlayDeathMontage();
-
-	TEnumAsByte<EDeathPose> Pose(Selection);
-	if (Pose < EDeathPose::EDP_MAX)
-	{
-		DeathPose = Pose;
-	}
-	return Selection;
 }
 
 void AEnemy::PawnSeen(APawn* Pawn)
@@ -302,7 +311,7 @@ void AEnemy::CheckCombatTarget()
 	{
 		ClearAttackTimer();
 		LoseInterest();
-		if(IsEngaged())
+		if(!IsEngaged())
 		{
 			StartPatrolling();
 		}
