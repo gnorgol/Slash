@@ -69,8 +69,6 @@ void AItem::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 	if (PickupInterface) {
 		PickupInterface->SetOverlappingItem(nullptr);
 	}
-	SpawnPickupSystem();
-	SpawnPickupSound();
 }
 void AItem::SpawnPickupSystem()
 {

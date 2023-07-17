@@ -334,6 +334,18 @@ void ASlashCharacter::GetHit_Implementation(const FVector& ImpactPoint, AActor* 
 void ASlashCharacter::SetOverlappingItem(AItem* Item)
 {
 	OverlappingItem = Item;
+	//if is a weapon
+	bool bWeapon = Cast<AWeapon>(Item) != nullptr;
+
+	if (bWeapon)
+	{
+		SlashOverlay->SetHelpText(FText::FromString("Press E to Equip"));
+		SlashOverlay->SetHelpTextVisibility(true);
+	}
+	else
+	{
+		SlashOverlay->SetHelpTextVisibility(false);
+	}
 }
 
 void ASlashCharacter::AddSouls(ASoul* Soul)

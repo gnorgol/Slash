@@ -21,6 +21,8 @@ public:
 	void SetStaminaPercent(float Percent);
 	void SetGold(int32 Gold);
 	void SetSoul(int32 Soul);
+	void SetHelpText(const FText& Text);
+	void SetHelpTextVisibility(bool bVisible);
 
 private:
 	UPROPERTY(meta = (BindWidget))
@@ -34,4 +36,7 @@ private:
 
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* SoulText;
+
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* HelpText;
 };

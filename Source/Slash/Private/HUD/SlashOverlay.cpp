@@ -37,3 +37,19 @@ void USlashOverlay::SetSoul(int32 Soul)
 		SoulText->SetText(FText::FromString(FString::FromInt(Soul)));
 	}
 }
+
+void USlashOverlay::SetHelpText(const FText& Text)
+{
+	if (HelpText)
+	{
+		HelpText->SetText(Text);
+	}
+}
+
+void USlashOverlay::SetHelpTextVisibility(bool bVisible)
+{
+	if (HelpText)
+	{
+		HelpText->SetVisibility(bVisible ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+	}
+}
