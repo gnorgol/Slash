@@ -22,7 +22,7 @@ enum class EActionState : uint8
 };
 //Enemy Death States
 UENUM(BlueprintType)
-enum EDeathPose 
+enum EDeathPose
 {
 	EDP_Death1 UMETA(DisplayName = "Death1"),
 	EDP_Death2 UMETA(DisplayName = "Death2"),

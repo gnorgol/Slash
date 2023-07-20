@@ -3,7 +3,8 @@
 
 #include "HUD/SlashHUD.h"
 #include "HUD/SlashOverlay.h"
-
+#include "HUD/SlashMenuOverlay.h"
+#include "Components/Button.h"
 
 
 void ASlashHUD::PreInitializeComponents()
@@ -16,8 +17,16 @@ void ASlashHUD::PreInitializeComponents()
 		if (PlayerController && SlashOverlayClass)
 		{
 			SlashOverlay = CreateWidget<USlashOverlay>(PlayerController, SlashOverlayClass);
-			SlashOverlay->AddToViewport();
-
+			//SlashOverlay->AddToViewport();
+			SlashMenuOverlay = CreateWidget<USlashMenuOverlay>(PlayerController, SlashMenuOverlayClass);			
+			SlashMenuOverlay->AddToViewport();
+			
+			PlayerController->bShowMouseCursor = true;
 		}
 	}
 }
+
+
+
+
+

@@ -16,10 +16,13 @@
 #include "Items/Weapons/Weapon.h"
 #include "HUD/SlashHUD.h"
 #include "HUD/SlashOverlay.h"
+#include "HUD/SlashMenuOverlay.h"
 #include "Components/AttributeComponent.h"
 #include "Items/Soul.h"
 #include "Items/Health.h"
 #include "Items/Treasure.h"
+#include "Components/Button.h"
+
 
 
 // Sets default values
@@ -55,7 +58,6 @@ ASlashCharacter::ASlashCharacter()
 	EyeBrows = CreateDefaultSubobject<UGroomComponent>(TEXT("EyeBrows"));
 	EyeBrows->SetupAttachment(GetMesh());
 	EyeBrows->AttachmentName = FString("head");
-
 
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
 
@@ -100,7 +102,6 @@ void ASlashCharacter::InitializeSlashOverlay()
 		if (SlashHUD)
 		{
 			SlashOverlay = SlashHUD->GetSlashOverlay();
-
 			if (SlashOverlay && Attributes)
 			{
 				SlashOverlay->SetHealthPercent(Attributes->GetHealthPercent());
@@ -108,13 +109,62 @@ void ASlashCharacter::InitializeSlashOverlay()
 				SlashOverlay->SetGold(0);
 				SlashOverlay->SetSoul(0);
 			}
+			SlashMenuOverlay = SlashHUD->GetSlashMenuOverlay();
+			SlashMenuOverlay->PlayButton->OnClicked.AddDynamic(this, &ASlashCharacter::Play);
+			SlashMenuOverlay->CreditButton->OnClicked.AddDynamic(this, &ASlashCharacter::Credit);
+			SlashMenuOverlay->QuitButton->OnClicked.AddDynamic(this, &ASlashCharacter::Quit);
 		}
+	}
+}
+void ASlashCharacter::Play()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Play"));
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (PlayerController && SlashMenuOverlay && SlashOverlay)
+	{
+		PlayerController->SetPause(false);
+		SlashMenuOverlay->RemoveFromParent();
+		SlashOverlay->AddToViewport();
+		PlayerController->bShowMouseCursor = false;
+		PlayerController->SetInputMode(FInputModeGameOnly());
+		GameState = EGameState::EGS_InGame;
+		
+	}
+
+}
+
+void ASlashCharacter::Credit()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Credit"));
+}
+void ASlashCharacter::Quit()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Quit"));
+	FPlatformMisc::RequestExit(false);
+
+}
+void ASlashCharacter::Pause()
+{
+	if (IsMenu())
+	{
+		return;
+	}
+	UE_LOG(LogTemp, Warning, TEXT("ShowMenu"));
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (PlayerController && SlashMenuOverlay && SlashOverlay)
+	{
+		SlashOverlay->RemoveFromParent();
+		SlashMenuOverlay->AddToViewport();
+		PlayerController->bShowMouseCursor = true;
+		PlayerController->SetInputMode(FInputModeUIOnly());
+		GameState = EGameState::EGS_Menu;
+		PlayerController->SetPause(true);
 	}
 }
 
 void ASlashCharacter::Move(const FInputActionValue& Value)
 {
-	if (ActionState != EActionState::EAS_Unoccupied) return;
+	if (!IsUnoccupied() || !IsPlaying()) return;
 	const FVector2D MovementVector = Value.Get<FVector2D>();
 
 	const FRotator ControlRotation = Controller->GetControlRotation();
@@ -128,9 +178,18 @@ void ASlashCharacter::Move(const FInputActionValue& Value)
 	AddMovementInput(RightDirection, MovementVector.Y);
 }
 
+bool ASlashCharacter::IsPlaying()
+{
+	return GameState == EGameState::EGS_InGame;
+}
+bool ASlashCharacter::IsMenu()
+{
+	return GameState == EGameState::EGS_Menu;
+}
+
 void ASlashCharacter::Jump()
 {
-	if (IsUnoccupied())
+	if (IsUnoccupied() && IsPlaying())
 	{
 		Super::Jump();
 	}
@@ -144,6 +203,7 @@ bool ASlashCharacter::IsUnoccupied()
 
 void ASlashCharacter::Look(const FInputActionValue& Value)
 {
+	if (!IsPlaying()) return;
 	const FVector2D LookVector = Value.Get<FVector2D>();
 	//UE_LOG(LogTemp, Warning, TEXT("LookVector: %s"), *LookVector.ToString());
 
@@ -178,7 +238,7 @@ void ASlashCharacter::Equip()
 
 void ASlashCharacter::Dodge()
 {
-	if (IsOccupied() || !HasEnoughStamina())
+	if (IsOccupied() || !HasEnoughStamina() || !IsPlaying())
 	{
 		return;
 	}
@@ -315,6 +375,7 @@ void ASlashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 		EnhancedInputComponent->BindAction(EquipAction, ETriggerEvent::Started, this, &ASlashCharacter::Equip);
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ASlashCharacter::Attack);
 		EnhancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Triggered, this, &ASlashCharacter::Dodge);
+		EnhancedInputComponent->BindAction(PauseAction, ETriggerEvent::Triggered, this, &ASlashCharacter::Pause);
 	}
 
 }

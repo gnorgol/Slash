@@ -7,6 +7,7 @@
 #include "SlashHUD.generated.h"
 
 class USlashOverlay;
+class USlashMenuOverlay;
 
 UCLASS()
 class SLASH_API ASlashHUD : public AHUD
@@ -15,16 +16,27 @@ class SLASH_API ASlashHUD : public AHUD
 protected:
 
 	virtual void PreInitializeComponents() override;
+	
+
+public :
+
 
 private:
 
 	UPROPERTY(EditDefaultsOnly,Category = Slash)
 	TSubclassOf<USlashOverlay> SlashOverlayClass;
 
+	UPROPERTY(EditDefaultsOnly, Category = Slash)
+	TSubclassOf<USlashMenuOverlay> SlashMenuOverlayClass;
+
 	UPROPERTY()
 	USlashOverlay* SlashOverlay;
 
+	UPROPERTY()
+	USlashMenuOverlay* SlashMenuOverlay;
+
 public:
 	FORCEINLINE USlashOverlay* GetSlashOverlay() const { return SlashOverlay; }
+	FORCEINLINE USlashMenuOverlay* GetSlashMenuOverlay() const { return SlashMenuOverlay; }
 
 };

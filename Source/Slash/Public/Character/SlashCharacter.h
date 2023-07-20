@@ -6,6 +6,7 @@
 #include "BaseCharacter.h"
 #include "InputActionValue.h"
 #include "CharacterTypes.h"
+#include "GameStates.h"
 #include "Interfaces/PickupInterface.h"
 #include "SlashCharacter.generated.h"
 
@@ -19,7 +20,9 @@ class AItem;
 class ATreasure;
 class UAnimMontage;
 class USlashOverlay;
+class USlashMenuOverlay;
 class ASoul;
+
 
 
 
@@ -40,21 +43,22 @@ public:
 	virtual void AddGold(ATreasure* Treasure) override;
 	virtual void AddHealth(AHealth* Health) override;
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
-	
+
 protected:
 
 	virtual void BeginPlay() override;
-
-	
 
 	/*
 	* Callback functions for input actions
 	*/
 	void Move(const FInputActionValue& Value);
+	bool IsPlaying();
 	virtual void Jump() override;
 	void Look(const FInputActionValue& Value);
 	void Equip();
 	void Dodge();
+	void Pause();
+	bool IsMenu();
 	bool HasEnoughStamina();
 	bool IsOccupied();
 	virtual void Attack() override;
@@ -78,6 +82,8 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* DodgeAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* PauseAction;
 
 	void PlayEquipMontage(const FName SectionName);
 	bool CanDisarm();
@@ -85,6 +91,15 @@ protected:
 	void Disarm();
 	void Arm();
 	virtual void Die() override;
+
+	UFUNCTION()
+	void Play();
+	UFUNCTION()
+	void Credit();
+	UFUNCTION()
+	void Quit();
+
+	
 
 	UFUNCTION(BlueprintCallable)
 	void AttachWeaponToBack();
@@ -110,7 +125,9 @@ private:
 	bool IsUnoccupied();
 	void InitializeSlashOverlay();
 	void SetHUDHealth();
+
 	ECharacterState CharacterState = ECharacterState::ECS_Unequipped;
+	EGameState GameState = EGameState::EGS_Menu;
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	EActionState ActionState = EActionState::EAS_Unoccupied;
@@ -139,12 +156,18 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = Montages)
 		UAnimMontage* EquipMontage;
 
+
 	UPROPERTY()
 	USlashOverlay* SlashOverlay;
+	UPROPERTY(EditDefaultsOnly, Category = Slash)
+		TSubclassOf<USlashOverlay> SlashMenuOverlayClass;
+	UPROPERTY()
+	USlashMenuOverlay* SlashMenuOverlay;
 
 public:
 	FORCEINLINE ECharacterState GetCharacterState() const { return CharacterState; }
 	FORCEINLINE EActionState GetActionState() const { return ActionState; }
+	FORCEINLINE EGameState GetGameState() const { return GameState; }
 };
 
 
